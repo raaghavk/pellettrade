@@ -1,73 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { sendOTP, verifyOTP, createUserProfile } from '../lib/supabase';
-import { Phone, Lock } from 'lucide-react';
+import { sendMagicLink, demoLogin } from '../lib/supabase';
+import { Mail, Users, ShoppingCart, Shield, CheckCircle } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState('phone'); // phone, otp
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [sent, setSent] = useState(false);
 
-  const formatPhoneInput = (value) => {
-    const cleaned = value.replace(/\D/g, '');
-    if (cleaned.length === 0) return '';
-    if (cleaned.length <= 10) return cleaned;
-    return cleaned.slice(0, 10);
-  };
-
-  const handlePhoneChange = (e) => {
-    setPhone(formatPhoneInput(e.target.value));
-    setError('');
-  };
-
-  const handlePhoneSubmit = async (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
-    if (phone.length !== 10) {
-      setError('Please enter a valid 10-digit phone number');
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address');
       return;
     }
 
     setLoading(true);
     setError('');
 
-    const fullPhone = `+91${phone}`;
-    const result = await sendOTP(fullPhone);
+    const result = await sendMagicLink(email);
 
     if (result.success) {
-      setStep('otp');
+      setSent(true);
     } else {
-      setError(result.error || 'Failed to send OTP');
-    }
-
-    setLoading(false);
-  };
-
-  const handleOtpChange = (e) => {
-    const cleaned = e.target.value.replace(/\D/g, '').slice(0, 6);
-    setOtp(cleaned);
-    setError('');
-  };
-
-  const handleOtpSubmit = async (e) => {
-    e.preventDefault();
-    if (otp.length !== 6) {
-      setError('Please enter a valid 6-digit OTP');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    const fullPhone = `+91${phone}`;
-    const result = await verifyOTP(fullPhone, otp);
-
-    if (result.success) {
-      navigate('/');
-    } else {
-      setError(result.error || 'Failed to verify OTP');
+      setError(result.error || 'Failed to send login link');
     }
 
     setLoading(false);
@@ -82,67 +40,42 @@ const Login = () => {
           <p>India's B2B Biomass Pellet Market</p>
         </div>
 
-        {step === 'phone' ? (
-          <form onSubmit={handlePhoneSubmit} className="login-form">
+        {sent ? (
+          <div className="login-form">
+            <div className="magic-link-sent">
+              <CheckCircle size={48} color="#4CAF50" />
+              <h2>Check your email</h2>
+              <p className="sent-email">{email}</p>
+              <p className="login-info">
+                We've sent you a magic login link. Click the link in your email to sign in.
+              </p>
+              <button
+                type="button"
+                className="btn btn-secondary btn-block"
+                onClick={() => {
+                  setSent(false);
+                  setEmail('');
+                  setError('');
+                }}
+              >
+                Use a different email
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleEmailSubmit} className="login-form">
             <h2>Get Started</h2>
 
             <div className="form-group">
-              <label htmlFor="phone">Phone Number</label>
-              <div className="phone-input-wrapper">
-                <span className="country-code">+91</span>
-                <input
-                  id="phone"
-                  type="tel"
-                  placeholder="9876543210"
-                  value={phone}
-                  onChange={handlePhoneChange}
-                  disabled={loading}
-                  maxLength="10"
-                  inputMode="numeric"
-                />
-              </div>
-            </div>
-
-            {error && <div className="error-message">{error}</div>}
-
-            <button
-              type="submit"
-              className="btn btn-primary btn-block btn-large"
-              disabled={loading || phone.length !== 10}
-            >
-              {loading ? (
-                <span className="loading-text">Sending OTP...</span>
-              ) : (
-                <>
-                  <Phone size={20} />
-                  Send OTP
-                </>
-              )}
-            </button>
-
-            <p className="login-info">
-              We'll send a one-time password to your phone number
-            </p>
-          </form>
-        ) : (
-          <form onSubmit={handleOtpSubmit} className="login-form">
-            <h2>Enter OTP</h2>
-            <p className="phone-display">
-              Sent to +91{phone.replace(/(\d{5})(\d{5})/, '$1 $2')}
-            </p>
-
-            <div className="form-group">
-              <label htmlFor="otp">One-Time Password</label>
+              <label htmlFor="email">Email Address</label>
               <input
-                id="otp"
-                type="text"
-                placeholder="000000"
-                value={otp}
-                onChange={handleOtpChange}
+                id="email"
+                type="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setError(''); }}
                 disabled={loading}
-                maxLength="6"
-                inputMode="numeric"
-                className="otp-input"
+                className="email-input"
               />
             </div>
 
@@ -151,32 +84,80 @@ const Login = () => {
             <button
               type="submit"
               className="btn btn-primary btn-block btn-large"
-              disabled={loading || otp.length !== 6}
+              disabled={loading || !email}
             >
               {loading ? (
-                <span className="loading-text">Verifying...</span>
+                <span className="loading-text">Sending link...</span>
               ) : (
                 <>
-                  <Lock size={20} />
-                  Verify OTP
+                  <Mail size={20} />
+                  Send Magic Link
                 </>
               )}
             </button>
 
+            <p className="login-info">
+              We'll email you a magic link to sign in instantly — no password needed
+            </p>
+          </form>
+        )}
+
+        <div className="demo-section">
+          <div className="demo-divider">
+            <span>or try demo</span>
+          </div>
+          <div className="demo-buttons">
             <button
               type="button"
-              className="btn btn-secondary btn-block"
-              onClick={() => {
-                setStep('phone');
-                setOtp('');
+              className="demo-btn demo-seller"
+              onClick={async () => {
+                setLoading(true);
                 setError('');
+                const result = await demoLogin('seller');
+                if (result.success) navigate('/');
+                else setError(result.error || 'Demo login failed');
+                setLoading(false);
               }}
               disabled={loading}
             >
-              Change Number
+              <Users size={18} />
+              <span>Seller Demo</span>
             </button>
-          </form>
-        )}
+            <button
+              type="button"
+              className="demo-btn demo-buyer"
+              onClick={async () => {
+                setLoading(true);
+                setError('');
+                const result = await demoLogin('buyer');
+                if (result.success) navigate('/');
+                else setError(result.error || 'Demo login failed');
+                setLoading(false);
+              }}
+              disabled={loading}
+            >
+              <ShoppingCart size={18} />
+              <span>Buyer Demo</span>
+            </button>
+          </div>
+          <button
+            type="button"
+            className="demo-btn demo-admin"
+            onClick={async () => {
+              setLoading(true);
+              setError('');
+              const result = await demoLogin('admin');
+              if (result.success) navigate('/admin');
+              else setError(result.error || 'Demo login failed');
+              setLoading(false);
+            }}
+            disabled={loading}
+            style={{ width: '100%', marginTop: '8px' }}
+          >
+            <Shield size={18} />
+            <span>Admin Demo</span>
+          </button>
+        </div>
       </div>
     </div>
   );

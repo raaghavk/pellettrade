@@ -5,32 +5,20 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-export const sendOTP = async (phoneNumber) => {
+// Email Magic Link auth
+export const sendMagicLink = async (email) => {
   try {
     const { data, error } = await supabase.auth.signInWithOtp({
-      phone: phoneNumber,
+      email,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
     });
 
     if (error) throw error;
     return { success: true, data };
   } catch (error) {
-    console.error('OTP send error:', error);
-    return { success: false, error: error.message };
-  }
-};
-
-export const verifyOTP = async (phoneNumber, token) => {
-  try {
-    const { data, error } = await supabase.auth.verifyOtp({
-      phone: phoneNumber,
-      token,
-      type: 'sms',
-    });
-
-    if (error) throw error;
-    return { success: true, data };
-  } catch (error) {
-    console.error('OTP verify error:', error);
+    console.error('Magic link error:', error);
     return { success: false, error: error.message };
   }
 };
@@ -43,6 +31,61 @@ export const getCurrentUser = async () => {
   } catch (error) {
     console.error('Get user error:', error);
     return null;
+  }
+};
+
+// Demo login for development (uses email/password auth)
+export const demoLogin = async (role = 'seller') => {
+  const email = role === 'seller'
+    ? 'demo-seller@pellettrade.app'
+    : role === 'buyer'
+    ? 'demo-buyer@pellettrade.app'
+    : 'demo-admin@pellettrade.app';
+  const password = 'demo123456';
+
+  try {
+    // Try to sign in first
+    let { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error && error.message.includes('Invalid login')) {
+      // Account doesn't exist, create it
+      const signUpResult = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { role, is_demo: true }
+        }
+      });
+
+      if (signUpResult.error) throw signUpResult.error;
+      data = signUpResult.data;
+
+      // Create user profile
+      if (data.user) {
+        const demoProfiles = {
+          seller: { name: 'Demo Seller', phone: '+919876500001', business_name: 'Demo Pellet Co.', location_state: 'Haryana', location_city: 'Panipat', role: 'seller' },
+          buyer: { name: 'Demo Buyer', phone: '+919876500002', business_name: 'Demo Industries', location_state: 'Uttar Pradesh', location_city: 'Lucknow', role: 'buyer' },
+          admin: { name: 'Demo Admin', phone: '+919876500003', business_name: 'PelletTrade HQ', location_state: 'Haryana', location_city: 'Gurgaon', role: 'seller', is_admin: true },
+        };
+
+        const profileData = demoProfiles[role];
+        await supabase.from('users').upsert([{
+          id: data.user.id,
+          ...profileData,
+          is_admin: profileData.is_admin || false,
+          kyc_verified: true,
+          rating: 4.5,
+          total_ratings: 12,
+        }]);
+      }
+    } else if (error) {
+      throw error;
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Demo login error:', error);
+    return { success: false, error: error.message };
   }
 };
 
