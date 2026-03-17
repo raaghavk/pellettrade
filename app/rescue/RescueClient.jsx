@@ -37,7 +37,7 @@ export default function RescueClient({ initialAlerts }) {
         .insert([{
           buyer_id: profile.id,
           seller_id: rescueAlert.seller_id,
-          quantity: rescueAlert.quantity_tonnes,
+          quantity_tonnes: rescueAlert.quantity_tonnes,
           price_per_tonne: rescueAlert.flash_price,
           total_amount: totalAmount,
           escrow_amount: escrowAmount,

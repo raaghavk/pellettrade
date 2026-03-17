@@ -65,13 +65,12 @@ export default function ListingDetailClient({ listing, listingId }) {
           buyer_id: profile.id,
           seller_id: listing.seller_id,
           listing_id: listing.id,
-          quantity,
+          quantity_tonnes: quantity,
           price_per_tonne: listing.price_per_tonne,
           total_amount: totalAmount,
           escrow_amount: escrowAmount,
-          status: 'ordered',
+          status: 'pending',
           payment_status: 'pending',
-          created_at: new Date().toISOString(),
         }])
         .select()
         .single();

@@ -30,7 +30,8 @@ async function fetchListing(id) {
 }
 
 export async function generateMetadata({ params }) {
-  const listing = await fetchListing(params.id);
+  const { id } = await params;
+  const listing = await fetchListing(id);
 
   if (!listing) {
     return {
@@ -49,11 +50,12 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function ListingDetailPage({ params }) {
-  const listing = await fetchListing(params.id);
+  const { id } = await params;
+  const listing = await fetchListing(id);
 
   return (
     <div className="page-container">
-      <ListingDetailClient listing={listing} listingId={params.id} />
+      <ListingDetailClient listing={listing} listingId={id} />
     </div>
   );
 }
