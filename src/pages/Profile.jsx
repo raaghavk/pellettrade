@@ -242,7 +242,7 @@ const Profile = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="section-card">
+      <div className="section-card profile-stats">
         <h2>Account Statistics</h2>
         <div className="stats-grid">
           <div className="stat-item">
