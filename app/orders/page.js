@@ -9,7 +9,7 @@ import { ChevronRight } from 'lucide-react';
 
 const MyOrders = () => {
   const router = useRouter();
-  const { profile } = useAuth();
+  const { profile, loading: authLoading, isAuthenticated } = useAuth();
   const { role } = useTheme();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,8 +44,10 @@ const MyOrders = () => {
 
     if (profile) {
       fetchOrders();
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [profile, role]);
+  }, [profile, role, authLoading]);
 
   const getStatusColor = (status) => {
     const colors = {

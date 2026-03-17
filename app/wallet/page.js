@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { Plus, Minus, Eye, EyeOff, Download } from 'lucide-react';
 
 const Wallet = () => {
-  const { profile, setProfile } = useAuth();
+  const { profile, setProfile, loading: authLoading } = useAuth();
   const [showBalance, setShowBalance] = useState(true);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,8 +44,10 @@ const Wallet = () => {
 
     if (profile) {
       fetchTransactions();
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [profile?.id]);
+  }, [profile?.id, authLoading]);
 
   const handleAddMoney = async (e) => {
     e.preventDefault();
