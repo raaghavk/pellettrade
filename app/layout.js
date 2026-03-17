@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import RoleSync from "@/components/RoleSync";
+import Layout from "@/components/Layout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,7 +27,9 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
           <AuthProvider>
             <RoleSync />
-            {children}
+            <Layout>
+              {children}
+            </Layout>
           </AuthProvider>
         </ThemeProvider>
       </body>

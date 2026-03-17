@@ -9,7 +9,7 @@ import { TrendingUp, ShoppingCart, Wallet as WalletIcon, Plus } from 'lucide-rea
 
 const Dashboard = () => {
   const router = useRouter();
-  const { profile } = useAuth();
+  const { profile, loading: authLoading, isAuthenticated } = useAuth();
   const { role } = useTheme();
   const [stats, setStats] = useState({
     orderCount: 0,
@@ -19,6 +19,12 @@ const Dashboard = () => {
   });
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -69,10 +75,20 @@ const Dashboard = () => {
 
     if (profile) {
       fetchStats();
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [profile, role]);
+  }, [profile, role, authLoading]);
 
   const formatCurrency = (amount) => `₹${amount.toLocaleString('en-IN')}`;
+
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="flex-center" style={{ minHeight: '60vh' }}>
+        <div className="spinner"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container">

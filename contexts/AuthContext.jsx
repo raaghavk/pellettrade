@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useRef } from 'react';
 import { supabase, getCurrentUser, getUserProfile, createUserProfile } from '@/lib/supabase';
 
 export const AuthContext = createContext();
@@ -10,13 +10,13 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const initializedRef = useRef(false);
 
-  const fetchProfile = useCallback(async (userId) => {
+  const fetchProfile = async (userId) => {
     try {
       let profileData = await getUserProfile(userId);
       if (!profileData) {
-        const phone = user?.phone;
-        profileData = await createUserProfile(userId, phone, 'seller');
+        profileData = await createUserProfile(userId, null, 'seller');
       }
       setProfile(profileData);
       return profileData;
@@ -24,9 +24,12 @@ export const AuthProvider = ({ children }) => {
       console.error('Error fetching profile:', err);
       setError(err.message);
     }
-  }, [user?.phone]);
+  };
 
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
     const initializeAuth = async () => {
       try {
         const currentUser = await getCurrentUser();
@@ -53,13 +56,14 @@ export const AuthProvider = ({ children }) => {
           setUser(null);
           setProfile(null);
         }
+        setLoading(false);
       }
     );
 
     return () => {
       subscription?.unsubscribe();
     };
-  }, [fetchProfile]);
+  }, []);
 
   const value = {
     user,
