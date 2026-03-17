@@ -27,6 +27,23 @@ import AdminOrders from './pages/admin/AdminOrders';
 import AdminWallet from './pages/admin/AdminWallet';
 import AdminRescue from './pages/admin/AdminRescue';
 
+import { useAuth } from './contexts/AuthContext';
+import { useTheme } from './contexts/ThemeContext';
+
+// Sync profile role with theme context on load/profile change
+const RoleSync = () => {
+  const { profile } = useAuth();
+  const { setRole, role } = useTheme();
+
+  useEffect(() => {
+    if (profile?.role_active && profile.role_active !== role) {
+      setRole(profile.role_active);
+    }
+  }, [profile?.role_active]);
+
+  return null;
+};
+
 // Google Analytics
 const GA_ID = 'G-XXXXXXXXXX';
 
@@ -60,7 +77,9 @@ function AppRoutes() {
         }
       >
         {/* Dashboard */}
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={
+          <ProtectedRoute><Dashboard /></ProtectedRoute>
+        } />
 
         {/* Listings */}
         <Route path="/listings" element={
@@ -133,6 +152,7 @@ export default function App() {
     <AuthProvider>
       <ThemeProvider>
         <Router>
+          <RoleSync />
           <AppRoutes />
         </Router>
       </ThemeProvider>

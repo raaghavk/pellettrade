@@ -3,15 +3,13 @@ import React, { createContext, useState, useEffect } from 'react';
 export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [role, setRole] = useState('seller');
+  const [role, setRoleState] = useState(() => {
+    return localStorage.getItem('userRole') || 'seller';
+  });
 
   useEffect(() => {
-    const savedRole = localStorage.getItem('userRole');
-    if (savedRole) {
-      setRole(savedRole);
-    }
-    applyTheme(savedRole || 'seller');
-  }, []);
+    applyTheme(role);
+  }, [role]);
 
   const applyTheme = (newRole) => {
     const root = document.documentElement;
@@ -39,15 +37,18 @@ export const ThemeProvider = ({ children }) => {
     root.style.setProperty('--info', '#2196F3');
   };
 
+  const setRole = (newRole) => {
+    setRoleState(newRole);
+    localStorage.setItem('userRole', newRole);
+  };
+
   const toggleRole = () => {
     const newRole = role === 'seller' ? 'buyer' : 'seller';
     setRole(newRole);
-    localStorage.setItem('userRole', newRole);
-    applyTheme(newRole);
   };
 
   return (
-    <ThemeContext.Provider value={{ role, toggleRole }}>
+    <ThemeContext.Provider value={{ role, setRole, toggleRole }}>
       {children}
     </ThemeContext.Provider>
   );

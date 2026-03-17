@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sendMagicLink, demoLogin } from '../lib/supabase';
+import { useTheme } from '../contexts/ThemeContext';
 import { Mail, Users, ShoppingCart, Shield, CheckCircle } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { setRole } = useTheme();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -114,7 +116,7 @@ const Login = () => {
                 setLoading(true);
                 setError('');
                 const result = await demoLogin('seller');
-                if (result.success) navigate('/');
+                if (result.success) { setRole('seller'); navigate('/'); }
                 else setError(result.error || 'Demo login failed');
                 setLoading(false);
               }}
@@ -130,7 +132,7 @@ const Login = () => {
                 setLoading(true);
                 setError('');
                 const result = await demoLogin('buyer');
-                if (result.success) navigate('/');
+                if (result.success) { setRole('buyer'); navigate('/'); }
                 else setError(result.error || 'Demo login failed');
                 setLoading(false);
               }}
@@ -147,7 +149,7 @@ const Login = () => {
               setLoading(true);
               setError('');
               const result = await demoLogin('admin');
-              if (result.success) navigate('/admin');
+              if (result.success) { setRole('seller'); navigate('/admin'); }
               else setError(result.error || 'Demo login failed');
               setLoading(false);
             }}

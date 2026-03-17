@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, ShoppingBag, Wallet, Zap, User } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const BottomNav = () => {
   const location = useLocation();
-  const { profile } = useAuth();
+  const { role } = useTheme();
 
-  const isBuyerMode = localStorage.getItem('userRole') === 'buyer';
+  const isBuyerMode = role === 'buyer';
 
   const navItems = [
     {

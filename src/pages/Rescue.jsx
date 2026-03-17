@@ -37,23 +37,23 @@ const Rescue = () => {
     fetchAlerts();
   }, [filter]);
 
-  const handleAcceptDeal = async (alert) => {
+  const handleAcceptDeal = async (rescueAlert) => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
 
     try {
-      const totalAmount = alert.flash_price * alert.quantity_tonnes;
+      const totalAmount = rescueAlert.flash_price * rescueAlert.quantity_tonnes;
       const escrowAmount = totalAmount;
 
       const { data, error } = await supabase
         .from('orders')
         .insert([{
           buyer_id: profile.id,
-          seller_id: alert.seller_id,
-          quantity_tonnes: alert.quantity_tonnes,
-          price_per_tonne: alert.flash_price,
+          seller_id: rescueAlert.seller_id,
+          quantity_tonnes: rescueAlert.quantity_tonnes,
+          price_per_tonne: rescueAlert.flash_price,
           total_amount: totalAmount,
           escrow_amount: escrowAmount,
           status: 'pending',
@@ -69,14 +69,14 @@ const Rescue = () => {
       await supabase
         .from('rescue_alerts')
         .update({ status: 'accepted', accepted_by: profile.id, accepted_at: new Date().toISOString() })
-        .eq('id', alert.id);
+        .eq('id', rescueAlert.id);
 
       navigate(`/order/${data.id}`, {
         state: { message: 'Flash deal accepted! Proceed to payment.' }
       });
-    } catch (error) {
-      console.error('Error accepting deal:', error);
-      alert('Failed to accept deal');
+    } catch (err) {
+      console.error('Error accepting deal:', err);
+      window.alert('Failed to accept deal');
     }
   };
 
