@@ -19,8 +19,8 @@ const MyOrders = () => {
         let query = supabase.from('orders').select(`
           *,
           listing:listings(pellet_type, price_per_tonne),
-          buyer:users(id, full_name),
-          seller:users(id, full_name)
+          buyer:users!buyer_id(id, name),
+          seller:users!seller_id(id, name)
         `);
 
         if (role === 'seller') {
@@ -47,12 +47,12 @@ const MyOrders = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      'ordered': '#2196F3',
+      'pending': '#2196F3',
       'accepted': '#FF9800',
       'loaded': '#FF9800',
       'in_transit': '#9C27B0',
       'delivered': '#4CAF50',
-      'rejected': '#F44336',
+      'disputed': '#F44336',
       'cancelled': '#757575',
     };
     return colors[status] || '#757575';
@@ -60,12 +60,12 @@ const MyOrders = () => {
 
   const getStatusLabel = (status) => {
     const labels = {
-      'ordered': 'Pending',
+      'pending': 'Pending',
       'accepted': 'Accepted',
       'loaded': 'Loaded',
       'in_transit': 'In Transit',
       'delivered': 'Delivered',
-      'rejected': 'Rejected',
+      'disputed': 'Disputed',
       'cancelled': 'Cancelled',
     };
     return labels[status] || status;
@@ -75,7 +75,7 @@ const MyOrders = () => {
     ? orders
     : orders.filter(o => o.status === filter);
 
-  const statuses = ['all', 'ordered', 'accepted', 'loaded', 'in_transit', 'delivered'];
+  const statuses = ['all', 'pending', 'accepted', 'loaded', 'in_transit', 'delivered'];
 
   if (loading) {
     return (
@@ -141,7 +141,7 @@ const MyOrders = () => {
               <div className="order-details">
                 <div className="detail-item">
                   <span className="label">Quantity</span>
-                  <span className="value">{order.quantity} tonnes</span>
+                  <span className="value">{order.quantity_tonnes} tonnes</span>
                 </div>
                 <div className="detail-item">
                   <span className="label">Amount</span>
@@ -151,8 +151,8 @@ const MyOrders = () => {
                   <span className="label">Party</span>
                   <span className="value">
                     {role === 'seller'
-                      ? order.buyer?.full_name || 'Buyer'
-                      : order.seller?.full_name || 'Seller'}
+                      ? order.buyer?.name || 'Buyer'
+                      : order.seller?.name || 'Seller'}
                   </span>
                 </div>
               </div>

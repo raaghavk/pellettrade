@@ -35,20 +35,20 @@ const AdminUsers = () => {
 
     if (searchQuery) {
       result = result.filter(u =>
-        u.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         u.phone?.includes(searchQuery) ||
-        u.company_name?.toLowerCase().includes(searchQuery.toLowerCase())
+        u.business_name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     if (filter === 'verified') {
-      result = result.filter(u => u.kyc_verified);
+      result = result.filter(u => u.kyc_status === 'verified');
     } else if (filter === 'unverified') {
-      result = result.filter(u => !u.kyc_verified);
+      result = result.filter(u => u.kyc_status !== 'verified');
     } else if (filter === 'sellers') {
-      result = result.filter(u => u.role === 'seller');
+      result = result.filter(u => u.role_active === 'seller');
     } else if (filter === 'buyers') {
-      result = result.filter(u => u.role === 'buyer');
+      result = result.filter(u => u.role_active === 'buyer');
     }
 
     setFilteredUsers(result);
@@ -58,12 +58,12 @@ const AdminUsers = () => {
     try {
       await supabase
         .from('users')
-        .update({ kyc_verified: true })
+        .update({ kyc_status: 'verified' })
         .eq('id', userId);
 
       setUsers(prev =>
         prev.map(u =>
-          u.id === userId ? { ...u, kyc_verified: true } : u
+          u.id === userId ? { ...u, kyc_status: 'verified' } : u
         )
       );
     } catch (error) {
@@ -75,12 +75,12 @@ const AdminUsers = () => {
     try {
       await supabase
         .from('users')
-        .update({ kyc_verified: false })
+        .update({ kyc_status: 'rejected' })
         .eq('id', userId);
 
       setUsers(prev =>
         prev.map(u =>
-          u.id === userId ? { ...u, kyc_verified: false } : u
+          u.id === userId ? { ...u, kyc_status: 'rejected' } : u
         )
       );
     } catch (error) {
@@ -128,25 +128,25 @@ const AdminUsers = () => {
             className={`filter-tab ${filter === 'verified' ? 'active' : ''}`}
             onClick={() => setFilter('verified')}
           >
-            Verified ({users.filter(u => u.kyc_verified).length})
+            Verified ({users.filter(u => u.kyc_status === 'verified').length})
           </button>
           <button
             className={`filter-tab ${filter === 'unverified' ? 'active' : ''}`}
             onClick={() => setFilter('unverified')}
           >
-            Unverified ({users.filter(u => !u.kyc_verified).length})
+            Unverified ({users.filter(u => u.kyc_status !== 'verified').length})
           </button>
           <button
             className={`filter-tab ${filter === 'sellers' ? 'active' : ''}`}
             onClick={() => setFilter('sellers')}
           >
-            Sellers ({users.filter(u => u.role === 'seller').length})
+            Sellers ({users.filter(u => u.role_active === 'seller').length})
           </button>
           <button
             className={`filter-tab ${filter === 'buyers' ? 'active' : ''}`}
             onClick={() => setFilter('buyers')}
           >
-            Buyers ({users.filter(u => u.role === 'buyer').length})
+            Buyers ({users.filter(u => u.role_active === 'buyer').length})
           </button>
         </div>
       </div>
@@ -174,26 +174,26 @@ const AdminUsers = () => {
               {filteredUsers.map(user => (
                 <tr key={user.id}>
                   <td className="user-name">
-                    <span>{user.full_name || 'N/A'}</span>
+                    <span>{user.name || 'N/A'}</span>
                     {user.is_admin && <span className="admin-badge">Admin</span>}
                   </td>
                   <td>{user.phone}</td>
                   <td>
                     <span className="role-badge" style={{
-                      backgroundColor: user.role === 'seller' ? '#4CAF50' : '#2196F3'
+                      backgroundColor: user.role_active === 'seller' ? '#4CAF50' : '#2196F3'
                     }}>
-                      {user.role === 'seller' ? 'Seller' : 'Buyer'}
+                      {user.role_active === 'seller' ? 'Seller' : 'Buyer'}
                     </span>
                   </td>
-                  <td>{user.company_name || '-'}</td>
+                  <td>{user.business_name || '-'}</td>
                   <td>
                     <span className="rating">
-                      ⭐ {user.rating?.toFixed(1) || 'N/A'}
+                      {user.rating?.toFixed(1) || 'N/A'}
                     </span>
                   </td>
                   <td>
                     <div className="kyc-status">
-                      {user.kyc_verified ? (
+                      {user.kyc_status === 'verified' ? (
                         <>
                           <CheckCircle size={16} color="#4CAF50" />
                           <span>Verified</span>
@@ -201,13 +201,13 @@ const AdminUsers = () => {
                       ) : (
                         <>
                           <Clock size={16} color="#FF9800" />
-                          <span>Pending</span>
+                          <span>{user.kyc_status || 'Pending'}</span>
                         </>
                       )}
                     </div>
                   </td>
                   <td>
-                    {!user.kyc_verified && (
+                    {user.kyc_status !== 'verified' && (
                       <div className="action-buttons">
                         <button
                           className="btn-approve"

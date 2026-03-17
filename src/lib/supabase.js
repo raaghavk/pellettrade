@@ -63,9 +63,9 @@ export const demoLogin = async (role = 'seller') => {
       // Create user profile
       if (data.user) {
         const demoProfiles = {
-          seller: { name: 'Demo Seller', phone: '+919876500001', business_name: 'Demo Pellet Co.', location_state: 'Haryana', location_city: 'Panipat', role: 'seller' },
-          buyer: { name: 'Demo Buyer', phone: '+919876500002', business_name: 'Demo Industries', location_state: 'Uttar Pradesh', location_city: 'Lucknow', role: 'buyer' },
-          admin: { name: 'Demo Admin', phone: '+919876500003', business_name: 'PelletTrade HQ', location_state: 'Haryana', location_city: 'Gurgaon', role: 'seller', is_admin: true },
+          seller: { name: 'Demo Seller', phone: '+919876500001', business_name: 'Demo Pellet Co.', location_state: 'Haryana', location_city: 'Panipat', role_active: 'seller' },
+          buyer: { name: 'Demo Buyer', phone: '+919876500002', business_name: 'Demo Industries', location_state: 'Uttar Pradesh', location_city: 'Lucknow', role_active: 'buyer' },
+          admin: { name: 'Demo Admin', phone: '+919876500003', business_name: 'PelletTrade HQ', location_state: 'Haryana', location_city: 'Gurgaon', role_active: 'seller', is_admin: true },
         };
 
         const profileData = demoProfiles[role];
@@ -73,9 +73,9 @@ export const demoLogin = async (role = 'seller') => {
           id: data.user.id,
           ...profileData,
           is_admin: profileData.is_admin || false,
-          kyc_verified: true,
+          kyc_status: 'verified',
           rating: 4.5,
-          total_ratings: 12,
+          total_trades: 12,
         }]);
       }
     } else if (error) {
@@ -123,11 +123,11 @@ export const createUserProfile = async (userId, phoneNumber, role = 'seller') =>
       .insert([{
         id: userId,
         phone: phoneNumber,
-        role,
+        role_active: role,
         is_admin: false,
-        kyc_verified: false,
+        kyc_status: 'pending',
         rating: 0,
-        total_ratings: 0,
+        total_trades: 0,
       }])
       .select()
       .single();

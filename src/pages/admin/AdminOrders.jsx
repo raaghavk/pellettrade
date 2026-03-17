@@ -17,8 +17,8 @@ const AdminOrders = () => {
           .select(`
             *,
             listing:listings(pellet_type),
-            buyer:users(full_name, phone),
-            seller:users(full_name, phone)
+            buyer:users!buyer_id(name, phone),
+            seller:users!seller_id(name, phone)
           `)
           .order('created_at', { ascending: false });
 
@@ -41,8 +41,8 @@ const AdminOrders = () => {
     if (searchQuery) {
       result = result.filter(o =>
         o.id.includes(searchQuery) ||
-        o.buyer?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        o.seller?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
+        o.buyer?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        o.seller?.name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -55,12 +55,12 @@ const AdminOrders = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      'ordered': '#2196F3',
+      'pending': '#2196F3',
       'accepted': '#FF9800',
       'loaded': '#FF9800',
       'in_transit': '#9C27B0',
       'delivered': '#4CAF50',
-      'rejected': '#F44336',
+      'disputed': '#F44336',
       'cancelled': '#757575',
     };
     return colors[status] || '#757575';
@@ -68,7 +68,7 @@ const AdminOrders = () => {
 
   const formatCurrency = (amount) => `₹${amount.toLocaleString('en-IN')}`;
 
-  const statuses = ['all', 'ordered', 'accepted', 'loaded', 'in_transit', 'delivered', 'rejected'];
+  const statuses = ['all', 'pending', 'accepted', 'loaded', 'in_transit', 'delivered', 'disputed', 'cancelled'];
 
   if (loading) {
     return (
@@ -145,17 +145,17 @@ const AdminOrders = () => {
                   <td>{order.listing?.pellet_type || '-'}</td>
                   <td>
                     <div className="user-cell">
-                      <span className="name">{order.buyer?.full_name || '-'}</span>
+                      <span className="name">{order.buyer?.name || '-'}</span>
                       <span className="phone">{order.buyer?.phone}</span>
                     </div>
                   </td>
                   <td>
                     <div className="user-cell">
-                      <span className="name">{order.seller?.full_name || '-'}</span>
+                      <span className="name">{order.seller?.name || '-'}</span>
                       <span className="phone">{order.seller?.phone}</span>
                     </div>
                   </td>
-                  <td className="text-right">{order.quantity}</td>
+                  <td className="text-right">{order.quantity_tonnes}</td>
                   <td className="text-right">{order.price_per_tonne?.toLocaleString('en-IN')}</td>
                   <td className="text-right font-bold">
                     {formatCurrency(order.total_amount || 0)}

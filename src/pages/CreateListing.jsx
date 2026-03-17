@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { PELLET_TYPES, INDIAN_STATES } from '../lib/constants';
 import { ArrowLeft } from 'lucide-react';
 
 const CreateListing = () => {
@@ -10,21 +11,16 @@ const CreateListing = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    pellet_type: 'Pine',
+    pellet_type: 'Rice Husk',
     price_per_tonne: '',
-    available_quantity: '',
+    quantity_tonnes: '',
     calorific_value: '',
-    moisture_content: '',
-    ash_content: '',
-    density: '',
-    location: '',
-    state: 'Maharashtra',
-    delivery_time: 7,
+    moisture_pct: '',
+    ash_pct: '',
+    location_city: '',
+    location_state: profile?.location_state || 'Maharashtra',
     description: '',
   });
-
-  const pelletTypes = ['Pine', 'Hardwood', 'Agricultural Waste', 'Mixed Feedstock'];
-  const states = ['Maharashtra', 'Karnataka', 'Andhra Pradesh', 'Madhya Pradesh', 'Gujarat', 'Rajasthan', 'Tamil Nadu', 'Telangana'];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,28 +35,12 @@ const CreateListing = () => {
       setError('Please enter a valid price');
       return false;
     }
-    if (!formData.available_quantity || formData.available_quantity <= 0) {
+    if (!formData.quantity_tonnes || formData.quantity_tonnes <= 0) {
       setError('Please enter a valid quantity');
       return false;
     }
-    if (!formData.calorific_value || formData.calorific_value <= 0) {
-      setError('Please enter a valid calorific value');
-      return false;
-    }
-    if (formData.moisture_content === '' || formData.moisture_content < 0 || formData.moisture_content > 100) {
-      setError('Please enter a valid moisture content (0-100%)');
-      return false;
-    }
-    if (formData.ash_content === '' || formData.ash_content < 0 || formData.ash_content > 100) {
-      setError('Please enter a valid ash content (0-100%)');
-      return false;
-    }
-    if (!formData.density || formData.density <= 0) {
-      setError('Please enter a valid density');
-      return false;
-    }
-    if (!formData.location.trim()) {
-      setError('Please enter a location');
+    if (!formData.location_city.trim()) {
+      setError('Please enter a city/location');
       return false;
     }
     return true;
@@ -75,30 +55,37 @@ const CreateListing = () => {
     setLoading(true);
 
     try {
+      const insertData = {
+        seller_id: profile.id,
+        pellet_type: formData.pellet_type,
+        price_per_tonne: parseFloat(formData.price_per_tonne),
+        quantity_tonnes: parseFloat(formData.quantity_tonnes),
+        location_city: formData.location_city,
+        location_state: formData.location_state,
+        description: formData.description,
+        status: 'active',
+      };
+
+      // Only include optional numeric fields if provided
+      if (formData.calorific_value) {
+        insertData.calorific_value = parseInt(formData.calorific_value);
+      }
+      if (formData.moisture_pct !== '') {
+        insertData.moisture_pct = parseFloat(formData.moisture_pct);
+      }
+      if (formData.ash_pct !== '') {
+        insertData.ash_pct = parseFloat(formData.ash_pct);
+      }
+
       const { data, error } = await supabase
         .from('listings')
-        .insert([{
-          seller_id: profile.id,
-          pellet_type: formData.pellet_type,
-          price_per_tonne: parseFloat(formData.price_per_tonne),
-          available_quantity: parseFloat(formData.available_quantity),
-          calorific_value: parseFloat(formData.calorific_value),
-          moisture_content: parseFloat(formData.moisture_content),
-          ash_content: parseFloat(formData.ash_content),
-          density: parseFloat(formData.density),
-          location: formData.location,
-          state: formData.state,
-          delivery_time: parseInt(formData.delivery_time),
-          description: formData.description,
-          status: 'active',
-          created_at: new Date().toISOString(),
-        }])
+        .insert([insertData])
         .select()
         .single();
 
       if (error) throw error;
 
-      navigate('/listings', { state: { message: 'Listing created successfully!' } });
+      navigate('/browse', { state: { message: 'Listing created successfully!' } });
     } catch (err) {
       console.error('Error creating listing:', err);
       setError(err.message || 'Failed to create listing');
@@ -128,14 +115,14 @@ const CreateListing = () => {
               value={formData.pellet_type}
               onChange={handleChange}
             >
-              {pelletTypes.map(type => (
+              {PELLET_TYPES.map(type => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="price_per_tonne">Price per Tonne (₹)</label>
+            <label htmlFor="price_per_tonne">Price per Tonne (₹) *</label>
             <input
               id="price_per_tonne"
               type="number"
@@ -144,21 +131,21 @@ const CreateListing = () => {
               onChange={handleChange}
               placeholder="e.g., 5000"
               step="100"
-              min="0"
+              min="1"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="available_quantity">Available Quantity (tonnes)</label>
+            <label htmlFor="quantity_tonnes">Available Quantity (tonnes) *</label>
             <input
-              id="available_quantity"
+              id="quantity_tonnes"
               type="number"
-              name="available_quantity"
-              value={formData.available_quantity}
+              name="quantity_tonnes"
+              value={formData.quantity_tonnes}
               onChange={handleChange}
               placeholder="e.g., 100"
               step="1"
-              min="0"
+              min="1"
             />
           </div>
 
@@ -170,7 +157,7 @@ const CreateListing = () => {
               name="calorific_value"
               value={formData.calorific_value}
               onChange={handleChange}
-              placeholder="e.g., 4800"
+              placeholder="e.g., 4200"
               step="10"
               min="0"
             />
@@ -182,12 +169,12 @@ const CreateListing = () => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="moisture_content">Moisture Content (%)</label>
+              <label htmlFor="moisture_pct">Moisture (%)</label>
               <input
-                id="moisture_content"
+                id="moisture_pct"
                 type="number"
-                name="moisture_content"
-                value={formData.moisture_content}
+                name="moisture_pct"
+                value={formData.moisture_pct}
                 onChange={handleChange}
                 placeholder="e.g., 8"
                 step="0.1"
@@ -197,12 +184,12 @@ const CreateListing = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="ash_content">Ash Content (%)</label>
+              <label htmlFor="ash_pct">Ash Content (%)</label>
               <input
-                id="ash_content"
+                id="ash_pct"
                 type="number"
-                name="ash_content"
-                value={formData.ash_content}
+                name="ash_pct"
+                value={formData.ash_pct}
                 onChange={handleChange}
                 placeholder="e.g., 5"
                 step="0.1"
@@ -211,68 +198,41 @@ const CreateListing = () => {
               />
             </div>
           </div>
-
-          <div className="form-group">
-            <label htmlFor="density">Density (kg/m³)</label>
-            <input
-              id="density"
-              type="number"
-              name="density"
-              value={formData.density}
-              onChange={handleChange}
-              placeholder="e.g., 650"
-              step="1"
-              min="0"
-            />
-          </div>
         </div>
 
         <div className="form-section">
-          <h2>Location & Delivery</h2>
+          <h2>Location</h2>
 
           <div className="form-group">
-            <label htmlFor="location">Location/City</label>
+            <label htmlFor="location_city">City *</label>
             <input
-              id="location"
+              id="location_city"
               type="text"
-              name="location"
-              value={formData.location}
+              name="location_city"
+              value={formData.location_city}
               onChange={handleChange}
               placeholder="e.g., Pune"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="state">State</label>
+            <label htmlFor="location_state">State</label>
             <select
-              id="state"
-              name="state"
-              value={formData.state}
+              id="location_state"
+              name="location_state"
+              value={formData.location_state}
               onChange={handleChange}
             >
-              {states.map(state => (
+              {INDIAN_STATES.map(state => (
                 <option key={state} value={state}>{state}</option>
               ))}
             </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="delivery_time">Delivery Time (days)</label>
-            <input
-              id="delivery_time"
-              type="number"
-              name="delivery_time"
-              value={formData.delivery_time}
-              onChange={handleChange}
-              min="1"
-              max="30"
-            />
           </div>
         </div>
 
         <div className="form-section">
           <div className="form-group">
-            <label htmlFor="description">Additional Description (Optional)</label>
+            <label htmlFor="description">Additional Description</label>
             <textarea
               id="description"
               name="description"

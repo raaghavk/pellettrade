@@ -16,7 +16,7 @@ const AdminWallet = () => {
           .from('wallet_transactions')
           .select(`
             *,
-            user:users(full_name, phone, company_name)
+            user:users!user_id(name, phone, business_name)
           `)
           .eq('type', 'deposit')
           .order('created_at', { ascending: false });
@@ -26,7 +26,7 @@ const AdminWallet = () => {
           .from('wallet_transactions')
           .select(`
             *,
-            user:users(full_name, phone, company_name)
+            user:users!user_id(name, phone, business_name)
           `)
           .eq('type', 'withdrawal')
           .order('created_at', { ascending: false });
@@ -209,9 +209,9 @@ const AdminWallet = () => {
               <tbody>
                 {deposits.map(deposit => (
                   <tr key={deposit.id} className={deposit.status === 'pending' ? 'pending-row' : ''}>
-                    <td>{deposit.user?.full_name || 'Unknown'}</td>
+                    <td>{deposit.user?.name || 'Unknown'}</td>
                     <td>{deposit.user?.phone}</td>
-                    <td>{deposit.user?.company_name || '-'}</td>
+                    <td>{deposit.user?.business_name || '-'}</td>
                     <td className="font-bold">{formatCurrency(deposit.amount)}</td>
                     <td>{deposit.description || '-'}</td>
                     <td>
@@ -271,12 +271,11 @@ const AdminWallet = () => {
               <tbody>
                 {withdrawals.map(withdrawal => (
                   <tr key={withdrawal.id} className={withdrawal.status === 'pending' ? 'pending-row' : ''}>
-                    <td>{withdrawal.user?.full_name || 'Unknown'}</td>
+                    <td>{withdrawal.user?.name || 'Unknown'}</td>
                     <td>{withdrawal.user?.phone}</td>
                     <td>
                       <div className="bank-info">
-                        <p>{withdrawal.bank_account || '-'}</p>
-                        <p className="text-secondary">{withdrawal.ifsc_code || '-'}</p>
+                        <p>{withdrawal.description || '-'}</p>
                       </div>
                     </td>
                     <td className="font-bold">{formatCurrency(withdrawal.amount)}</td>

@@ -28,8 +28,8 @@ const OrderDetail = () => {
           .select(`
             *,
             listing:listings(pellet_type, price_per_tonne),
-            buyer:users(id, full_name, phone),
-            seller:users(id, full_name, phone)
+            buyer:users!buyer_id(id, name, phone),
+            seller:users!seller_id(id, name, phone)
           `)
           .eq('id', id)
           .single();
@@ -93,20 +93,20 @@ const OrderDetail = () => {
       // Update seller rating
       const { data: currentSeller } = await supabase
         .from('users')
-        .select('rating, total_ratings')
+        .select('rating, total_trades')
         .eq('id', order.seller_id)
         .single();
 
-      const newTotalRatings = (currentSeller?.total_ratings || 0) + 1;
+      const newTotalRatings = (currentSeller?.total_trades || 0) + 1;
       const newAverageRating = (
-        ((currentSeller?.rating || 0) * (currentSeller?.total_ratings || 0)) + rating
+        ((currentSeller?.rating || 0) * (currentSeller?.total_trades || 0)) + rating
       ) / newTotalRatings;
 
       await supabase
         .from('users')
         .update({
           rating: newAverageRating,
-          total_ratings: newTotalRatings,
+          total_trades: newTotalRatings,
         })
         .eq('id', order.seller_id);
 
@@ -136,7 +136,7 @@ const OrderDetail = () => {
   const canRate = role === 'buyer' && profile?.id === order?.buyer_id && order?.status === 'delivered' && !order?.buyer_rating;
 
   const nextStatus = {
-    'ordered': 'accepted',
+    'pending': 'accepted',
     'accepted': 'loaded',
     'loaded': 'in_transit',
     'in_transit': 'delivered',
@@ -194,7 +194,7 @@ const OrderDetail = () => {
             </div>
             <div className="info-item">
               <span className="label">Quantity</span>
-              <span className="value">{order.quantity} tonnes</span>
+              <span className="value">{order.quantity_tonnes} tonnes</span>
             </div>
             <div className="info-item">
               <span className="label">Price/Tonne</span>
@@ -224,7 +224,7 @@ const OrderDetail = () => {
             <div className="party-info">
               <p className="label">Name</p>
               <p className="value">
-                {role === 'seller' ? order.buyer?.full_name : order.seller?.full_name}
+                {role === 'seller' ? order.buyer?.name : order.seller?.name}
               </p>
             </div>
             <div className="party-info">

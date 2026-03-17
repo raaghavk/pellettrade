@@ -3,14 +3,14 @@ import { Check, Clock } from 'lucide-react';
 
 const OrderTimeline = ({ status }) => {
   const steps = [
-    { key: 'ordered', label: 'Ordered', color: 'primary' },
+    { key: 'pending', label: 'Pending', color: 'primary' },
     { key: 'accepted', label: 'Accepted', color: 'accent' },
     { key: 'loaded', label: 'Loaded', color: 'accent' },
     { key: 'in_transit', label: 'In Transit', color: 'accent' },
     { key: 'delivered', label: 'Delivered', color: 'success' },
   ];
 
-  const statusOrder = ['ordered', 'accepted', 'loaded', 'in_transit', 'delivered'];
+  const statusOrder = ['pending', 'accepted', 'loaded', 'in_transit', 'delivered'];
   const currentIndex = statusOrder.indexOf(status);
 
   const getStatusColor = (stepIndex) => {

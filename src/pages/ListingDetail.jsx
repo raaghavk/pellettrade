@@ -21,7 +21,7 @@ const ListingDetail = () => {
           .from('listings')
           .select(`
             *,
-            seller:users(id, full_name, phone, rating, total_ratings, kyc_verified)
+            seller:users!seller_id(name, business_name, rating, total_trades, location_city, location_state, phone)
           `)
           .eq('id', id)
           .single();
@@ -50,7 +50,7 @@ const ListingDetail = () => {
       return;
     }
 
-    if (quantity > listing.available_quantity) {
+    if (quantity > listing.quantity_tonnes) {
       setError('Quantity exceeds available stock');
       return;
     }
@@ -143,7 +143,7 @@ const ListingDetail = () => {
             <span className="unit">/tonne</span>
           </div>
           <div className="stock-badge">
-            {listing.available_quantity} tonnes available
+            {listing.quantity_tonnes} tonnes available
           </div>
         </div>
 
@@ -153,7 +153,7 @@ const ListingDetail = () => {
           <div className="info-grid">
             <div className="info-item">
               <span className="label">Quantity Available</span>
-              <span className="value">{listing.available_quantity} tonnes</span>
+              <span className="value">{listing.quantity_tonnes} tonnes</span>
             </div>
             <div className="info-item">
               <span className="label">Calorific Value</span>
@@ -161,19 +161,11 @@ const ListingDetail = () => {
             </div>
             <div className="info-item">
               <span className="label">Moisture Content</span>
-              <span className="value">{listing.moisture_content}%</span>
+              <span className="value">{listing.moisture_pct}%</span>
             </div>
             <div className="info-item">
               <span className="label">Ash Content</span>
-              <span className="value">{listing.ash_content}%</span>
-            </div>
-            <div className="info-item">
-              <span className="label">Density</span>
-              <span className="value">{listing.density} kg/m³</span>
-            </div>
-            <div className="info-item">
-              <span className="label">Delivery</span>
-              <span className="value">{listing.delivery_time} days</span>
+              <span className="value">{listing.ash_pct}%</span>
             </div>
           </div>
 
@@ -191,7 +183,7 @@ const ListingDetail = () => {
             <MapPin size={20} />
             <div>
               <p className="label">Location</p>
-              <p className="value">{listing.location}, {listing.state}</p>
+              <p className="value">{listing.location_city}, {listing.location_state}</p>
             </div>
           </div>
         </div>
@@ -201,15 +193,13 @@ const ListingDetail = () => {
           <h2>Seller Information</h2>
           <div className="seller-details">
             <div className="seller-name">
-              <h3>{listing.seller?.full_name || 'Unknown Seller'}</h3>
-              {listing.seller?.kyc_verified && (
-                <span className="kyc-badge">✓ KYC Verified</span>
-              )}
+              <h3>{listing.seller?.name || 'Unknown Seller'}</h3>
+              <p className="business-name">{listing.seller?.business_name}</p>
             </div>
             <div className="rating-display">
               <Star size={20} fill="#FFB800" color="#FFB800" />
               <span className="rating">{listing.seller?.rating?.toFixed(1) || 'N/A'}</span>
-              <span className="count">({listing.seller?.total_ratings || 0} reviews)</span>
+              <span className="count">({listing.seller?.total_trades || 0} trades)</span>
             </div>
           </div>
         </div>
@@ -224,12 +214,12 @@ const ListingDetail = () => {
               id="quantity"
               type="number"
               min="1"
-              max={listing.available_quantity}
+              max={listing.quantity_tonnes}
               value={quantity}
               onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
             />
             <p className="form-hint">
-              Maximum: {listing.available_quantity} tonnes
+              Maximum: {listing.quantity_tonnes} tonnes
             </p>
           </div>
 
@@ -258,7 +248,7 @@ const ListingDetail = () => {
           <button
             className="btn btn-primary btn-block btn-large"
             onClick={handlePlaceOrder}
-            disabled={placing || quantity > listing.available_quantity}
+            disabled={placing || quantity > listing.quantity_tonnes}
           >
             {placing ? (
               <>

@@ -31,7 +31,8 @@ const Dashboard = () => {
           const { data: listings } = await supabase
             .from('listings')
             .select('id')
-            .eq('seller_id', profile?.id);
+            .eq('seller_id', profile?.id)
+            .eq('status', 'active');
 
           const totalValue = orders?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
 
@@ -76,7 +77,7 @@ const Dashboard = () => {
       <div className="page-header">
         <h1>Dashboard</h1>
         <p className="subtitle">
-          Welcome back, {profile?.full_name || 'Trader'}!
+          Welcome back, {profile?.name || 'Trader'}!
         </p>
       </div>
 

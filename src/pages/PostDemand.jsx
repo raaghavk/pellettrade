@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { PELLET_TYPES, INDIAN_STATES } from '../lib/constants';
 import { ArrowLeft } from 'lucide-react';
 
 const PostDemand = () => {
@@ -10,15 +11,14 @@ const PostDemand = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    pellet_type: 'Pine',
+    pellet_type: 'Rice Husk',
     quantity_needed: '',
-    max_price_per_tonne: '',
+    max_price: '',
     delivery_location: '',
+    delivery_state: '',
     needed_by_date: '',
     description: '',
   });
-
-  const pelletTypes = ['Pine', 'Hardwood', 'Agricultural Waste', 'Mixed Feedstock'];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,12 +33,16 @@ const PostDemand = () => {
       setError('Please enter a valid quantity');
       return false;
     }
-    if (!formData.max_price_per_tonne || formData.max_price_per_tonne <= 0) {
+    if (!formData.max_price || formData.max_price <= 0) {
       setError('Please enter a valid max price');
       return false;
     }
     if (!formData.delivery_location.trim()) {
       setError('Please enter delivery location');
+      return false;
+    }
+    if (!formData.delivery_state) {
+      setError('Please select a state');
       return false;
     }
     if (!formData.needed_by_date) {
@@ -73,10 +77,10 @@ const PostDemand = () => {
           buyer_id: profile.id,
           pellet_type: formData.pellet_type,
           quantity_needed: parseFloat(formData.quantity_needed),
-          max_price_per_tonne: parseFloat(formData.max_price_per_tonne),
+          max_price: parseFloat(formData.max_price),
           delivery_location: formData.delivery_location,
+          delivery_state: formData.delivery_state,
           needed_by_date: formData.needed_by_date,
-          description: formData.description,
           status: 'active',
           created_at: new Date().toISOString(),
         }]);
@@ -115,7 +119,7 @@ const PostDemand = () => {
               value={formData.pellet_type}
               onChange={handleChange}
             >
-              {pelletTypes.map(type => (
+              {PELLET_TYPES.map(type => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
@@ -136,12 +140,12 @@ const PostDemand = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="max_price_per_tonne">Maximum Price per Tonne (₹)</label>
+            <label htmlFor="max_price">Maximum Price per Tonne (₹)</label>
             <input
-              id="max_price_per_tonne"
+              id="max_price"
               type="number"
-              name="max_price_per_tonne"
-              value={formData.max_price_per_tonne}
+              name="max_price"
+              value={formData.max_price}
               onChange={handleChange}
               placeholder="e.g., 5500"
               step="100"
@@ -155,15 +159,30 @@ const PostDemand = () => {
           <h2>Delivery Details</h2>
 
           <div className="form-group">
-            <label htmlFor="delivery_location">Delivery Location</label>
+            <label htmlFor="delivery_location">Delivery Location (City)</label>
             <input
               id="delivery_location"
               type="text"
               name="delivery_location"
               value={formData.delivery_location}
               onChange={handleChange}
-              placeholder="e.g., Mumbai, Maharashtra"
+              placeholder="e.g., Mumbai"
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="delivery_state">Delivery State</label>
+            <select
+              id="delivery_state"
+              name="delivery_state"
+              value={formData.delivery_state}
+              onChange={handleChange}
+            >
+              <option value="">Select a state</option>
+              {INDIAN_STATES.map(state => (
+                <option key={state} value={state}>{state}</option>
+              ))}
+            </select>
           </div>
 
           <div className="form-group">

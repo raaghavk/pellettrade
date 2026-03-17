@@ -18,7 +18,7 @@ const ListingCard = ({ listing, onClick }) => {
       <div className="listing-card-body">
         <div className="info-row">
           <span className="label">Quantity:</span>
-          <span className="value">{formatQuantity(listing.available_quantity)}</span>
+          <span className="value">{formatQuantity(listing.quantity_tonnes)}</span>
         </div>
 
         <div className="info-row">
@@ -28,22 +28,22 @@ const ListingCard = ({ listing, onClick }) => {
 
         <div className="info-row">
           <MapPin size={16} className="inline-icon" />
-          <span className="value">{listing.location}, {listing.state}</span>
+          <span className="value">{listing.location_city}, {listing.location_state}</span>
         </div>
 
         <div className="info-row">
           <Star size={16} className="inline-icon" style={{ color: '#FFB800' }} />
           <span className="value">
-            {listing.seller_rating?.toFixed(1) || 'N/A'}
-            <span className="text-secondary"> ({listing.seller_total_ratings || 0})</span>
+            {listing.seller?.rating?.toFixed(1) || 'N/A'}
+            <span className="text-secondary"> ({listing.seller?.total_trades || 0})</span>
           </span>
         </div>
       </div>
 
       <div className="listing-card-footer">
         <div className="moisture-ash">
-          <span className="badge-small">MC: {listing.moisture_content}%</span>
-          <span className="badge-small">Ash: {listing.ash_content}%</span>
+          <span className="badge-small">MC: {listing.moisture_pct}%</span>
+          <span className="badge-small">Ash: {listing.ash_pct}%</span>
         </div>
       </div>
     </div>

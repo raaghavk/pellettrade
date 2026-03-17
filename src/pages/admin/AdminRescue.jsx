@@ -13,9 +13,7 @@ const AdminRescue = () => {
           .from('rescue_alerts')
           .select(`
             *,
-            listing:listings(pellet_type),
-            seller:users(full_name, phone),
-            buyer:users(full_name, phone)
+            seller:users!seller_id(name, phone)
           `);
 
         if (filter !== 'all') {
@@ -44,7 +42,7 @@ const AdminRescue = () => {
   const expiredAlerts = alerts.filter(a => a.status === 'expired').length;
 
   const totalDiscountValue = alerts.reduce((sum, a) => {
-    return sum + ((a.original_price - a.flash_price) * a.available_quantity);
+    return sum + ((a.original_price - a.flash_price) * a.quantity_tonnes);
   }, 0);
 
   if (loading) {
@@ -150,18 +148,18 @@ const AdminRescue = () => {
                 const discountPercent = Math.round(
                   ((alert.original_price - alert.flash_price) / alert.original_price) * 100
                 );
-                const discountValue = (alert.original_price - alert.flash_price) * alert.available_quantity;
+                const discountValue = (alert.original_price - alert.flash_price) * alert.quantity_tonnes;
 
                 return (
                   <tr key={alert.id}>
-                    <td className="font-bold">{alert.listing?.pellet_type || '-'}</td>
+                    <td className="font-bold">{alert.pellet_type || '-'}</td>
                     <td>
                       <div className="user-cell">
-                        <span className="name">{alert.seller?.full_name || '-'}</span>
+                        <span className="name">{alert.seller?.name || '-'}</span>
                         <span className="phone">{alert.seller?.phone}</span>
                       </div>
                     </td>
-                    <td>{alert.available_quantity}</td>
+                    <td>{alert.quantity_tonnes}</td>
                     <td>{formatCurrency(alert.original_price)}</td>
                     <td className="highlight">{formatCurrency(alert.flash_price)}</td>
                     <td>
@@ -169,11 +167,8 @@ const AdminRescue = () => {
                     </td>
                     <td className="font-bold">{formatCurrency(discountValue)}</td>
                     <td>
-                      {alert.buyer ? (
-                        <div className="user-cell">
-                          <span className="name">{alert.buyer.full_name}</span>
-                          <span className="phone">{alert.buyer.phone}</span>
-                        </div>
+                      {alert.accepted_by ? (
+                        <span className="text-secondary">Accepted</span>
                       ) : (
                         <span className="text-secondary">-</span>
                       )}

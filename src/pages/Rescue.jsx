@@ -17,10 +17,7 @@ const Rescue = () => {
       try {
         let query = supabase
           .from('rescue_alerts')
-          .select(`
-            *,
-            listing:listings(pellet_type)
-          `);
+          .select('*');
 
         if (filter === 'active') {
           query = query.eq('status', 'active');
@@ -47,7 +44,7 @@ const Rescue = () => {
     }
 
     try {
-      const totalAmount = alert.flash_price * alert.available_quantity;
+      const totalAmount = alert.flash_price * alert.quantity_tonnes;
       const escrowAmount = totalAmount;
 
       const { data, error } = await supabase
@@ -55,15 +52,13 @@ const Rescue = () => {
         .insert([{
           buyer_id: profile.id,
           seller_id: alert.seller_id,
-          listing_id: alert.listing_id,
-          quantity: alert.available_quantity,
+          quantity_tonnes: alert.quantity_tonnes,
           price_per_tonne: alert.flash_price,
           total_amount: totalAmount,
           escrow_amount: escrowAmount,
-          status: 'ordered',
+          status: 'pending',
           payment_status: 'pending',
-          rescue_order: true,
-          created_at: new Date().toISOString(),
+          is_rescue: true,
         }])
         .select()
         .single();
@@ -73,7 +68,7 @@ const Rescue = () => {
       // Mark alert as accepted
       await supabase
         .from('rescue_alerts')
-        .update({ status: 'accepted', buyer_id: profile.id })
+        .update({ status: 'accepted', accepted_by: profile.id, accepted_at: new Date().toISOString() })
         .eq('id', alert.id);
 
       navigate(`/order/${data.id}`, {

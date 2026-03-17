@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase, signOut } from '../lib/supabase';
+import { INDIAN_STATES } from '../lib/constants';
 import { LogOut, Edit2, CheckCircle, Clock } from 'lucide-react';
 
 const Profile = () => {
@@ -11,10 +12,12 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    full_name: profile?.full_name || '',
-    company_name: profile?.company_name || '',
-    business_type: profile?.business_type || '',
-    notifications_enabled: profile?.notifications_enabled !== false,
+    name: profile?.name || '',
+    business_name: profile?.business_name || '',
+    phone: profile?.phone || '',
+    location_city: profile?.location_city || '',
+    location_state: profile?.location_state || '',
+    location_pincode: profile?.location_pincode || '',
   });
 
   const handleChange = (e) => {
@@ -33,10 +36,12 @@ const Profile = () => {
       const { error } = await supabase
         .from('users')
         .update({
-          full_name: formData.full_name,
-          company_name: formData.company_name,
-          business_type: formData.business_type,
-          notifications_enabled: formData.notifications_enabled,
+          name: formData.name,
+          business_name: formData.business_name,
+          phone: formData.phone,
+          location_city: formData.location_city,
+          location_state: formData.location_state,
+          location_pincode: formData.location_pincode,
         })
         .eq('id', profile.id);
 
@@ -44,10 +49,12 @@ const Profile = () => {
 
       setProfile(prev => ({
         ...prev,
-        full_name: formData.full_name,
-        company_name: formData.company_name,
-        business_type: formData.business_type,
-        notifications_enabled: formData.notifications_enabled,
+        name: formData.name,
+        business_name: formData.business_name,
+        phone: formData.phone,
+        location_city: formData.location_city,
+        location_state: formData.location_state,
+        location_pincode: formData.location_pincode,
       }));
 
       setIsEditing(false);
@@ -98,13 +105,13 @@ const Profile = () => {
       <div className="profile-card">
         <div className="profile-header">
           <div className="avatar">
-            {profile?.full_name
-              ? profile.full_name.charAt(0).toUpperCase()
+            {profile?.name
+              ? profile.name.charAt(0).toUpperCase()
               : user?.phone?.slice(-2)}
           </div>
           <div className="profile-title">
-            <h2>{profile?.full_name || 'User'}</h2>
-            <p className="phone-number">{user?.phone}</p>
+            <h2>{profile?.name || 'User'}</h2>
+            <p className="phone-number">{profile?.phone || user?.phone}</p>
           </div>
           {!isEditing && (
             <button
@@ -119,54 +126,78 @@ const Profile = () => {
         {isEditing && (
           <div className="profile-form">
             <div className="form-group">
-              <label htmlFor="full_name">Full Name</label>
+              <label htmlFor="name">Full Name</label>
               <input
-                id="full_name"
+                id="name"
                 type="text"
-                name="full_name"
-                value={formData.full_name}
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
                 placeholder="Your full name"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="company_name">Company Name</label>
+              <label htmlFor="business_name">Business Name</label>
               <input
-                id="company_name"
+                id="business_name"
                 type="text"
-                name="company_name"
-                value={formData.company_name}
+                name="business_name"
+                value={formData.business_name}
                 onChange={handleChange}
-                placeholder="Your company name (optional)"
+                placeholder="Your business name (optional)"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="business_type">Business Type</label>
+              <label htmlFor="phone">Phone Number</label>
+              <input
+                id="phone"
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Your phone number"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="location_city">City</label>
+              <input
+                id="location_city"
+                type="text"
+                name="location_city"
+                value={formData.location_city}
+                onChange={handleChange}
+                placeholder="Your city"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="location_state">State</label>
               <select
-                id="business_type"
-                name="business_type"
-                value={formData.business_type}
+                id="location_state"
+                name="location_state"
+                value={formData.location_state}
                 onChange={handleChange}
               >
-                <option value="">Select business type</option>
-                <option value="individual">Individual Seller</option>
-                <option value="small_business">Small Business</option>
-                <option value="large_business">Large Business</option>
-                <option value="corporate">Corporate</option>
+                <option value="">Select state</option>
+                {INDIAN_STATES.map(state => (
+                  <option key={state} value={state}>{state}</option>
+                ))}
               </select>
             </div>
 
-            <div className="form-group checkbox">
+            <div className="form-group">
+              <label htmlFor="location_pincode">Pincode</label>
               <input
-                id="notifications"
-                type="checkbox"
-                name="notifications_enabled"
-                checked={formData.notifications_enabled}
+                id="location_pincode"
+                type="text"
+                name="location_pincode"
+                value={formData.location_pincode}
                 onChange={handleChange}
+                placeholder="Your pincode"
               />
-              <label htmlFor="notifications">Enable notifications</label>
             </div>
 
             {error && <div className="error-message">{error}</div>}
@@ -184,10 +215,12 @@ const Profile = () => {
                 onClick={() => {
                   setIsEditing(false);
                   setFormData({
-                    full_name: profile?.full_name || '',
-                    company_name: profile?.company_name || '',
-                    business_type: profile?.business_type || '',
-                    notifications_enabled: profile?.notifications_enabled !== false,
+                    name: profile?.name || '',
+                    business_name: profile?.business_name || '',
+                    phone: profile?.phone || '',
+                    location_city: profile?.location_city || '',
+                    location_state: profile?.location_state || '',
+                    location_pincode: profile?.location_pincode || '',
                   });
                   setError('');
                 }}
@@ -203,7 +236,7 @@ const Profile = () => {
       <div className="section-card">
         <h2>KYC Status</h2>
         <div className="kyc-status">
-          {profile?.kyc_verified ? (
+          {profile?.kyc_status === 'verified' ? (
             <>
               <CheckCircle size={24} color="#4CAF50" />
               <div>
@@ -215,8 +248,8 @@ const Profile = () => {
             <>
               <Clock size={24} color="#FF9800" />
               <div>
-                <p className="status-label">Pending Verification</p>
-                <p className="status-detail">KYC verification in progress</p>
+                <p className="status-label">{profile?.kyc_status === 'rejected' ? 'Rejected' : 'Pending Verification'}</p>
+                <p className="status-detail">{profile?.kyc_status === 'rejected' ? 'Your KYC was rejected' : 'KYC verification in progress'}</p>
               </div>
             </>
           )}
@@ -232,7 +265,7 @@ const Profile = () => {
               {profile?.rating?.toFixed(1) || 'N/A'}
             </span>
             <span className="rating-count">
-              / 5 ({profile?.total_ratings || 0} ratings)
+              / 5 ({profile?.total_trades || 0} trades)
             </span>
           </div>
           <div className="rating-info">
@@ -246,8 +279,8 @@ const Profile = () => {
         <h2>Account Statistics</h2>
         <div className="stats-grid">
           <div className="stat-item">
-            <span className="stat-value">{profile?.total_orders || 0}</span>
-            <span className="stat-label">Total Orders</span>
+            <span className="stat-value">{profile?.total_trades || 0}</span>
+            <span className="stat-label">Total Trades</span>
           </div>
           <div className="stat-item">
             <span className="stat-value">₹{(profile?.wallet_balance || 0).toLocaleString('en-IN')}</span>
@@ -256,15 +289,21 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Settings Section */}
+      {/* User Info Details */}
       <div className="section-card">
-        <h2>Settings</h2>
-        <div className="settings-list">
-          <div className="setting-item">
-            <span>Notifications</span>
-            <span className="setting-value">
-              {formData.notifications_enabled ? '✓ Enabled' : '✗ Disabled'}
-            </span>
+        <h2>Location Information</h2>
+        <div className="info-list">
+          <div className="info-item">
+            <span className="label">City:</span>
+            <span className="value">{profile?.location_city || 'Not specified'}</span>
+          </div>
+          <div className="info-item">
+            <span className="label">State:</span>
+            <span className="value">{profile?.location_state || 'Not specified'}</span>
+          </div>
+          <div className="info-item">
+            <span className="label">Pincode:</span>
+            <span className="value">{profile?.location_pincode || 'Not specified'}</span>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import ListingCard from '../components/ListingCard';
 import { Filter, Search } from 'lucide-react';
+import { PELLET_TYPES, INDIAN_STATES } from '../lib/constants';
 
 const Browse = () => {
   const navigate = useNavigate();
@@ -15,12 +16,9 @@ const Browse = () => {
     pelletType: '',
     minPrice: '',
     maxPrice: '',
-    state: '',
+    location_state: '',
     sortBy: 'newest',
   });
-
-  const pelletTypes = ['Pine', 'Hardwood', 'Agricultural Waste', 'Mixed Feedstock'];
-  const states = ['Maharashtra', 'Karnataka', 'Andhra Pradesh', 'Madhya Pradesh', 'Gujarat', 'Rajasthan', 'Tamil Nadu', 'Telangana'];
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -29,7 +27,7 @@ const Browse = () => {
           .from('listings')
           .select(`
             *,
-            seller:users(full_name, rating, total_ratings)
+            seller:users!seller_id(name, rating, total_trades, location_city)
           `)
           .eq('status', 'active');
 
@@ -62,8 +60,8 @@ const Browse = () => {
       result = result.filter(l => l.price_per_tonne <= parseInt(filters.maxPrice));
     }
 
-    if (filters.state) {
-      result = result.filter(l => l.state === filters.state);
+    if (filters.location_state) {
+      result = result.filter(l => l.location_state === filters.location_state);
     }
 
     if (filters.sortBy === 'price-low') {
@@ -91,7 +89,7 @@ const Browse = () => {
       pelletType: '',
       minPrice: '',
       maxPrice: '',
-      state: '',
+      location_state: '',
       sortBy: 'newest',
     });
     setShowFilters(false);
@@ -135,7 +133,7 @@ const Browse = () => {
               onChange={(e) => handleFilterChange('pelletType', e.target.value)}
             >
               <option value="">All Types</option>
-              {pelletTypes.map(type => (
+              {PELLET_TYPES.map(type => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
@@ -163,11 +161,11 @@ const Browse = () => {
           <div className="form-group">
             <label>State</label>
             <select
-              value={filters.state}
-              onChange={(e) => handleFilterChange('state', e.target.value)}
+              value={filters.location_state}
+              onChange={(e) => handleFilterChange('location_state', e.target.value)}
             >
               <option value="">All States</option>
-              {states.map(state => (
+              {INDIAN_STATES.map(state => (
                 <option key={state} value={state}>{state}</option>
               ))}
             </select>

@@ -63,7 +63,6 @@ const Wallet = () => {
           amount: parseFloat(addMoneyForm.amount),
           status: 'pending',
           description: `Bank transfer - ${addMoneyForm.paymentMethod}`,
-          created_at: new Date().toISOString(),
         }]);
 
       if (txError) throw txError;
@@ -103,10 +102,7 @@ const Wallet = () => {
           type: 'withdrawal',
           amount: parseFloat(withdrawForm.amount),
           status: 'pending',
-          description: `Withdrawal to ${withdrawForm.bankAccount}`,
-          bank_account: withdrawForm.bankAccount,
-          ifsc_code: withdrawForm.ifscCode,
-          created_at: new Date().toISOString(),
+          description: `Withdrawal to A/C: ${withdrawForm.bankAccount} (IFSC: ${withdrawForm.ifscCode})`,
         }]);
 
       if (txError) throw txError;
@@ -286,22 +282,10 @@ const Wallet = () => {
 
             <div className="bank-details">
               <h3>Bank Details</h3>
-              <div className="detail-item">
-                <span className="label">Account Holder</span>
-                <span className="value">PelletTrade India Pvt Ltd</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Account Number</span>
-                <span className="value">1234567890123456</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">IFSC Code</span>
-                <span className="value">SBIN0001234</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">Bank</span>
-                <span className="value">State Bank of India</span>
-              </div>
+              <p style={{ color: '#666', fontSize: '14px' }}>
+                Bank account details for deposits will be shared after admin verification.
+                Contact support for assistance.
+              </p>
             </div>
 
             <div className="form-group">

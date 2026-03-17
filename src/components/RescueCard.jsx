@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Zap, MapPin, Clock } from 'lucide-react';
 
 const RescueCard = ({ alert, onAccept }) => {
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (alert.expires_at) {
+      const remaining = Math.floor((new Date(alert.expires_at) - new Date()) / 1000);
+      return Math.max(0, remaining);
+    }
+    return 300; // fallback 5 minutes
+  });
 
   useEffect(() => {
     if (timeLeft <= 0) return;
 
     const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
+      setTimeLeft(prev => Math.max(0, prev - 1));
     }, 1000);
 
     return () => clearInterval(timer);
@@ -20,11 +26,11 @@ const RescueCard = ({ alert, onAccept }) => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const discountPercent = Math.round(
+  const discountPercent = alert.discount_pct || Math.round(
     ((alert.original_price - alert.flash_price) / alert.original_price) * 100
   );
 
-  const formatPrice = (price) => `₹${price.toLocaleString('en-IN')}`;
+  const formatPrice = (price) => `₹${price?.toLocaleString('en-IN')}`;
 
   return (
     <div className={`rescue-card ${timeLeft <= 60 ? 'urgent' : ''}`}>
@@ -41,7 +47,7 @@ const RescueCard = ({ alert, onAccept }) => {
 
         <div className="rescue-quantity">
           <span className="label">Available:</span>
-          <span className="quantity">{alert.available_quantity} tonnes</span>
+          <span className="quantity">{alert.quantity_tonnes} tonnes</span>
         </div>
 
         <div className="rescue-prices">
@@ -55,10 +61,12 @@ const RescueCard = ({ alert, onAccept }) => {
           </div>
         </div>
 
-        <div className="rescue-location">
-          <MapPin size={16} />
-          <span>{alert.distance_km} km away</span>
-        </div>
+        {alert.broadcast_radius_km && (
+          <div className="rescue-location">
+            <MapPin size={16} />
+            <span>Within {alert.broadcast_radius_km} km</span>
+          </div>
+        )}
 
         <div className={`rescue-timer ${timeLeft <= 60 ? 'critical' : ''}`}>
           <Clock size={18} />
