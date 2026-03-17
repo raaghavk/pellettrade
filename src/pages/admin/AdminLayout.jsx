@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, Outlet } from 'react-router-dom';
 import { Users, ShoppingCart, Wallet as WalletIcon, Zap, Home, LogOut } from 'lucide-react';
 import { supabase, signOut } from '../../lib/supabase';
 
@@ -57,6 +57,7 @@ const AdminLayout = ({ children }) => {
       {/* Main Content */}
       <main className="admin-content">
         {children}
+        <Outlet />
       </main>
     </div>
   );

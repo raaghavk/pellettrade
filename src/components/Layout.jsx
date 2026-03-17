@@ -1,9 +1,8 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import BottomNav from './BottomNav';
-import { Sun, Moon } from 'lucide-react';
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -42,6 +41,7 @@ const Layout = ({ children }) => {
       {/* Main Content */}
       <main className="main-content">
         {children}
+        <Outlet />
       </main>
 
       {/* Bottom Navigation */}
