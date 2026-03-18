@@ -82,10 +82,24 @@ const Dashboard = () => {
 
   const formatCurrency = (amount) => `₹${amount.toLocaleString('en-IN')}`;
 
-  if (authLoading || !isAuthenticated) {
+  if (authLoading) {
     return (
       <div className="flex-center" style={{ minHeight: '60vh' }}>
         <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex-center" style={{ minHeight: '60vh' }}>
+        <div className="empty-state">
+          <h2>Welcome to PelletTrade</h2>
+          <p>Please sign in to view your dashboard</p>
+          <button className="btn btn-primary" onClick={() => router.push('/login')}>
+            Sign In
+          </button>
+        </div>
       </div>
     );
   }

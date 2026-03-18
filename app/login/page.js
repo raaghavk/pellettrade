@@ -1,18 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { sendMagicLink, demoLogin } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Mail, Users, ShoppingCart, Shield, CheckCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const { setRole } = useTheme();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
+
+  // Redirect to home once auth state confirms login
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push('/');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -118,9 +127,8 @@ export default function LoginPage() {
                 setLoading(true);
                 setError('');
                 const result = await demoLogin('seller');
-                if (result.success) { setRole('seller'); router.push('/'); }
-                else setError(result.error || 'Demo login failed');
-                setLoading(false);
+                if (result.success) { setRole('seller'); }
+                else { setError(result.error || 'Demo login failed'); setLoading(false); }
               }}
               disabled={loading}
             >
@@ -134,9 +142,8 @@ export default function LoginPage() {
                 setLoading(true);
                 setError('');
                 const result = await demoLogin('buyer');
-                if (result.success) { setRole('buyer'); router.push('/'); }
-                else setError(result.error || 'Demo login failed');
-                setLoading(false);
+                if (result.success) { setRole('buyer'); }
+                else { setError(result.error || 'Demo login failed'); setLoading(false); }
               }}
               disabled={loading}
             >
@@ -151,9 +158,8 @@ export default function LoginPage() {
               setLoading(true);
               setError('');
               const result = await demoLogin('admin');
-              if (result.success) { setRole('seller'); router.push('/admin'); }
-              else setError(result.error || 'Demo login failed');
-              setLoading(false);
+              if (result.success) { setRole('seller'); }
+              else { setError(result.error || 'Demo login failed'); setLoading(false); }
             }}
             disabled={loading}
             style={{ width: '100%', marginTop: '8px' }}
